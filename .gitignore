@@ -1,0 +1,4 @@
+osrm-data/
+.venv/
+__pycache__
+conf/*.log

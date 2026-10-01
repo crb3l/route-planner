@@ -1,0 +1,19 @@
+services:
+    osrm:
+        image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+        command: osrm-routed --algorithm mld /data/monaco-latest.osrm
+        volumes:
+            - ./osrm-data/monaco:/data
+        ports:
+            - "5001:5000"
+
+    vroom:
+        image: ghcr.io/vroom-project/vroom-docker:v1.14.0
+        environment:
+            - VROOM_ROUTER=osrm
+        volumes:
+            - ./conf:/conf
+        ports:
+            - "3000:3000"
+        depends_on:
+            - osrm
