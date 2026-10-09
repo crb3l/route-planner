@@ -1,5 +1,15 @@
+import httpx
+
 from schemas import (Coordinate, OptimizeRequest, OptimizeResponse, Route, Step, Summary, UnassignedJob)
 
+VROOM_URL = "http://localhost:3000"
+VROOM_TIMEOUT = 30
+
+class VroomError(Exception):
+    def __init__(self, status_code: int, detail: str):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
 
 def to_lnglat(point: Coordinate) -> list[float]:
     # VROOM and OSRM want [long, lat], the opposit of Google Maps
@@ -61,3 +71,26 @@ def from_vroom(answer: dict) -> OptimizeResponse:
     )
 
     return OptimizeResponse(routes=routes, unassigned=unassigned, summary=summary)
+
+async def call_vroom(payload: dict) -> dict:
+    try:
+        async with httpx.AsyncClient(timeout=VROOM_TIMEOUT) as client:
+            response = await client.post(VROOM_URL, json=payload)
+    except httpx.ConnectError:
+        raise VroomError(502, "Can't reach VROOM. Is docker compose running?")
+    except httpx.TimeoutException:
+        raise VroomError(504, f"VROOM didn't answer within {VROOM_TIMEOUT} seconds")
+
+    answer = response.json()
+    code = answer["code"]
+    if code == 0:
+        return answer
+    if code == 2:
+        raise VroomError(400, answer["error"]) # the problem itself is invalid
+    if code == 4:
+        raise VroomError(413, answer["error"]) # too many locations or vehicles
+    raise VroomError(502, answer["error"]) # VROOM or OSRM failed (codes 1 and 3)
+
+async def solve(problem: OptimizeRequest) -> OptimizeResponse:
+    answer = await call_vroom(to_vroom(problem))
+    return from_vroom(answer)

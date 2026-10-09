@@ -1,10 +1,8 @@
-import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from schemas import OptimizeRequest, OptimizeResponse
-from vroom import from_vroom, to_vroom
-
-VROOM_URL = "http://localhost:3000"
+from vroom import VroomError, solve
 
 app = FastAPI()
 @app.get("/")
@@ -19,8 +17,13 @@ def add(a: int, b: int):
 def multiply(a: int, b: int):
     return {"result": a * b}
 
+@app.exception_handler(VroomError)
+async def handle_vroom_error(request: Request, error: VroomError):
+    return JSONResponse(
+        status_code=error.status_code,
+        content={"detail": error.detail, "source":"vroom"},
+    )
+
 @app.post("/optimize", response_model=OptimizeResponse)
 async def optimize(problem: OptimizeRequest):
-    async with httpx.AsyncClient() as client:
-        response = await client.post(VROOM_URL, json=to_vroom(problem))
-    return from_vroom(response.json())
+    return await solve(problem)
