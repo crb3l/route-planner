@@ -5,12 +5,12 @@ class Coordinate(BaseModel):
     lng: float = Field(ge=-180, le=180)
 
 class Job(BaseModel):
-    id: int = Field(ge=0)
+    id: int = Field(ge=0, le=2**64 - 1)
     location: Coordinate
     delivery: int = Field(default=0, ge=0)
 
 class Vehicle(BaseModel):
-    id: int = Field(ge=0)
+    id: int = Field(ge=0, le=2**64 - 1)
     start: Coordinate
     end: Coordinate | None = None
     capacity: int = Field(ge=0)
