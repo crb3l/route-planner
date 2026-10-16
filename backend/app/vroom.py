@@ -1,6 +1,6 @@
 import httpx
 
-from schemas import (Coordinate, OptimizeRequest, OptimizeResponse, Route, Step, Summary, UnassignedJob)
+from app.schemas import (Coordinate, OptimizeRequest, OptimizeResponse, Route, Step, Summary, UnassignedJob)
 
 VROOM_URL = "http://localhost:3000"
 VROOM_TIMEOUT = 30

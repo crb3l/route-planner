@@ -1,5 +1,5 @@
-from schemas import OptimizeRequest
-from vroom import from_vroom, to_vroom
+from app.schemas import OptimizeRequest
+from app.vroom import from_vroom, to_vroom
 
 def test_to_vroom_flips_coordinates(problem):
     payload = to_vroom(OptimizeRequest.model_validate(problem))
