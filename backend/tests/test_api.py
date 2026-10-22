@@ -40,7 +40,7 @@ def test_vroom_down_gives_502(monkeypatch, problem):
     assert response.json()["source"] == "vroom"
 
 def test_health_says_ok():
-    response = client.post("/api/v1/health")
+    response = client.get("/api/v1/health")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
