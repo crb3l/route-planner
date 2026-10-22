@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from app import vroom
 from app.main import app
 
+from app.settings import settings
+
 client = TestClient(app)
 
 
@@ -32,7 +34,7 @@ def test_bad_latitude_gives_422(problem):
 
 def test_vroom_down_gives_502(monkeypatch, problem):
     # Nothing listens on port 1, so this is what "VROOM is down" looks like
-    monkeypatch.setattr(vroom, "VROOM_URL", "http://localhost:1")
+    monkeypatch.setattr(settings, "vroom_url", "http://localhost:1")
 
     response = client.post("/api/v1/optimize", json=problem)
 
@@ -44,3 +46,14 @@ def test_health_says_ok():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+def test_cors_allows_the_frontend():
+    response = client.get("/api/v1/health", headers={"Origin": "http://localhost:5173"})
+
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+
+
+def test_cors_ignores_other_websites():
+    response = client.get("/api/v1/health", headers={"Origin": "https://evil.example"})
+
+    assert "access-control-allow-origin" not in response.headers

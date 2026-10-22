@@ -1,10 +1,7 @@
 import httpx
 
 from app.schemas import (Coordinate, OptimizeRequest, OptimizeResponse, Route, Step, Summary, UnassignedJob)
-
-VROOM_URL = "http://localhost:3000"
-VROOM_TIMEOUT = 30
-
+from app.settings import settings
 class VroomError(Exception):
     def __init__(self, status_code: int, detail: str):
         super().__init__(detail)
@@ -74,12 +71,12 @@ def from_vroom(answer: dict) -> OptimizeResponse:
 
 async def call_vroom(payload: dict) -> dict:
     try:
-        async with httpx.AsyncClient(timeout=VROOM_TIMEOUT) as client:
-            response = await client.post(VROOM_URL, json=payload)
+        async with httpx.AsyncClient(timeout=settings.vroom_timeout) as client:
+            response = await client.post(settings.vroom_url, json=payload)
     except httpx.ConnectError:
         raise VroomError(502, "Can't reach VROOM. Is docker compose running?")
     except httpx.TimeoutException:
-        raise VroomError(504, f"VROOM didn't answer within {VROOM_TIMEOUT} seconds")
+        raise VroomError(504, f"VROOM didn't answer within {settings.vroom_timeout} seconds")
 
     answer = response.json()
     code = answer["code"]

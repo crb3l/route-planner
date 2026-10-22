@@ -3,3 +3,4 @@ osrm-data/
 __pycache__
 conf/*.log
 .pytest_cache/
+.env

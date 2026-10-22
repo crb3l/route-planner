@@ -1,10 +1,20 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import health, optimize
-from app.vroom import VroomError, solve
+from app.vroom import VroomError
+
+from app.settings import settings
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 
 
 @app.exception_handler(VroomError)
