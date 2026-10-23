@@ -16,3 +16,10 @@ def test_environment_variables_win(monkeypatch):
 
     assert settings.vroom_url == "http://vroom:3000"
     assert settings.vroom_timeout == 5
+
+def test_reads_a_dotenv_file(monkeypatch, tmp_path):
+    (tmp_path / ".env").write_text("VROOM_URL=http://from-dotenv:3000\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("VROOM_URL", raising=False)
+
+    assert Settings().vroom_url == "http://from-dotenv:3000"

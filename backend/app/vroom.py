@@ -69,10 +69,9 @@ def from_vroom(answer: dict) -> OptimizeResponse:
 
     return OptimizeResponse(routes=routes, unassigned=unassigned, summary=summary)
 
-async def call_vroom(payload: dict) -> dict:
+async def call_vroom(payload: dict, http: httpx.AsyncClient) -> dict:
     try:
-        async with httpx.AsyncClient(timeout=settings.vroom_timeout) as client:
-            response = await client.post(settings.vroom_url, json=payload)
+        response = await http.post(settings.vroom_url, json=payload)
     except httpx.ConnectError:
         raise VroomError(502, "Can't reach VROOM. Is docker compose running?")
     except httpx.TimeoutException:
@@ -88,6 +87,6 @@ async def call_vroom(payload: dict) -> dict:
         raise VroomError(413, answer["error"]) # too many locations or vehicles
     raise VroomError(502, answer["error"]) # VROOM or OSRM failed (codes 1 and 3)
 
-async def solve(problem: OptimizeRequest) -> OptimizeResponse:
-    answer = await call_vroom(to_vroom(problem))
+async def solve(problem: OptimizeRequest, http: httpx.AsyncClient) -> OptimizeResponse:
+    answer = await call_vroom(to_vroom(problem), http)
     return from_vroom(answer)

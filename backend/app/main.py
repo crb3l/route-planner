@@ -4,10 +4,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import health, optimize
 from app.vroom import VroomError
-
 from app.settings import settings
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+
+import httpx
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #runs once, when the server starts
+    app.state.http = httpx.AsyncClient(timeout=settings.vroom_timeout)
+    yield
+    #runs once, when the server stops
+    await app.state.http.aclose()
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

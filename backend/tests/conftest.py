@@ -1,5 +1,14 @@
 import pytest
+from fastapi.testclient import TestClient
 
+from app.main import app
+
+
+@pytest.fixture
+def client():
+    # "with" runs the app's lifespan: startup before the test, shutdown after
+    with TestClient(app) as client:
+        yield client
 
 @pytest.fixture
 def problem():

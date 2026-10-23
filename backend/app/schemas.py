@@ -87,3 +87,8 @@ class OptimizeResponse(CamelModel):
     routes: list[Route]
     unassigned: list[UnassignedJob]
     summary: Summary
+
+class HealthResponse(CamelModel):
+    status: Literal["ok", "degraded"]
+    vroom: bool
+    osrm: bool
