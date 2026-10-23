@@ -92,3 +92,7 @@ class HealthResponse(CamelModel):
     status: Literal["ok", "degraded"]
     vroom: bool
     osrm: bool
+
+class GeocodeResponse(CamelModel):
+    label: str # short, for lists: "Strada Lipsacni 12"
+    display_name: str # the full address

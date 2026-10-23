@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health, optimize
+from app.routers import health, optimize, geocode
 from app.vroom import VroomError
 from app.settings import settings
 
@@ -37,3 +37,4 @@ async def handle_vroom_error(request: Request, error: VroomError):
 
 app.include_router(optimize.router, prefix="/api/v1")
 app.include_router(health.router, prefix="/api/v1")
+app.include_router(geocode.router, prefix="/api/v1")
