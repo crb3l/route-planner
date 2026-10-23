@@ -18,8 +18,8 @@ def test_optimize_returns_our_format(monkeypatch, problem, vroom_answer):
 
     assert response.status_code == 200
     body = response.json()
-    assert body["routes"][0]["steps"][1]["job_id"] == 1
-    assert body["unassigned"][0]["job_id"] == 2
+    assert body["routes"][0]["steps"][1]["jobId"] == 1
+    assert body["unassigned"][0]["jobId"] == 2
     assert body["summary"]["distance"] == 1000  # the fake's made-up number: VROOM was never called
 
 
@@ -57,3 +57,14 @@ def test_cors_ignores_other_websites():
     response = client.get("/api/v1/health", headers={"Origin": "https://evil.example"})
 
     assert "access-control-allow-origin" not in response.headers
+
+def test_json_uses_camel_case(monkeypatch, problem, vroom_answer):
+    async def fake_call_vroom(payload):
+        return vroom_answer
+
+    monkeypatch.setattr(vroom, "call_vroom", fake_call_vroom)
+
+    body = client.post("/api/v1/optimize", json=problem).json()
+
+    assert "vehicleId" in body["routes"][0]
+    assert "vehicle_id" not in body["routes"][0]
